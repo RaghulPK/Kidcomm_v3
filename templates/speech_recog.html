@@ -14,10 +14,12 @@
         <p id="p"></p>
     </div>
 
+    <img class="image1" src="https://drive.google.com/uc?export=view&id=1wbSw1QCwSliXhMvI7FzRJ9uq4wJcyxhg" id="storyImage" width="600" height="370" >
+
     <script>
         function say(transcript)
         {
-            fetch("http://143.244.135.235:8029/receiver",
+            fetch("http://127.0.0.1:5000/receiver",
             {
                 method: 'POST',
                 headers: {
@@ -31,7 +33,9 @@
                         alert("something is wrong")
                     }
                 }).then(jsonResponse=>{
-                    console.log(jsonResponse)
+                    console.log(jsonResponse);
+                    var image = document.getElementById('storyImage');
+                    image.src = jsonResponse;
                 }
                 ).catch((err) => console.error(err));
         }
