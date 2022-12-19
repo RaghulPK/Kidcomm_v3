@@ -1,58 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Speech Recognition</title>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content=
+        "width=device-width, initial-scale=1.0">
+
+    <title>Speech to Text</title>
+</head>
+
+<body>
+    <div class="words" contenteditable>
+        <p id="p"></p>
+    </div>
+
     <script>
-      window.onload = () => {
-        const button = document.getElementById('button');
-        button.addEventListener('click', () => {
-          if (button.style['animation-name'] === 'flash') {
-            recognition.stop();
-            button.style['animation-name'] = 'none';
-            button.innerText = 'Press to Start';
-            content.innerText = '';
-          } else {
-            button.style['animation-name'] = 'flash';
-            button.innerText = 'Press to Stop';
-            recognition.start();
-          }
+        var speech = true;
+        window.SpeechRecognition = window.SpeechRecognition
+                        || window.webkitSpeechRecognition;
+
+        const recognition = new SpeechRecognition();
+        recognition.interimResults = true;
+        const words = document.querySelector('.words');
+        words.appendChild(p);
+
+        recognition.addEventListener('result', e => {
+            const transcript = Array.from(e.results)
+                .map(result => result[0])
+                .map(result => result.transcript)
+                .join('')
+
+            document.getElementById("p").innerHTML = transcript;
+            console.log(transcript);
         });
 
-        const content = document.getElementById('content');
-
-        const recognition = new webkitSpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.onresult = function (event) {
-          let result = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            result += event.results[i][0].transcript;
-          }
-          content.innerText = result;
-        };
-      };
+        if (speech == true) {
+            recognition.start();
+            recognition.addEventListener('end', recognition.start);
+        }
     </script>
-    <style>
-      button {
-        background: yellow;
-        animation-name: none;
-        animation-duration: 3s;
-        animation-iteration-count: infinite;
-      }
-      @keyframes flash {
-        0% {
-          background: red;
-        }
-        50% {
-          background: green;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <button id="button">Press to Start</button>
-    <div id="content"></div>
-  </body>
+</body>
+
 </html>
