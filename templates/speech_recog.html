@@ -14,15 +14,7 @@
         <p id="p"></p>
     </div>
 
-    <script>
-        navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-            if (!MediaRecorder.isTypeSupported('audio/webm'))
-                return alert('Browser not supported')
-
-            const mediaRecorder = new MediaRecorder(stream, {
-                mimeType: 'audio/webm',
-            })
-            
+    <script>            
         var speech = true;
         window.SpeechRecognition = window.SpeechRecognition
                         || window.webkitSpeechRecognition;
@@ -31,6 +23,16 @@
         recognition.interimResults = true;
         const words = document.querySelector('.words');
         words.appendChild(p);
+        
+          recognition.onstart = () => {
+    alert("Speech Recognition Start");
+  };
+  speechRecognition.onerror = () => {
+    alert("Speech Recognition Error");
+  };
+  speechRecognition.onend = () => {
+    alert("Speech Recognition Ended");
+  };
 
         recognition.addEventListener('result', e => {
             const transcript = Array.from(e.results)
