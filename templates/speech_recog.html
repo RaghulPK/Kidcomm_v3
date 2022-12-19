@@ -15,6 +15,14 @@
     </div>
 
     <script>
+        navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+            if (!MediaRecorder.isTypeSupported('audio/webm'))
+                return alert('Browser not supported')
+
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'audio/webm',
+            })
+            
         var speech = true;
         window.SpeechRecognition = window.SpeechRecognition
                         || window.webkitSpeechRecognition;
