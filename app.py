@@ -132,6 +132,7 @@ def changeStory():
         print("Line no = " + str(line))
 
     image = img_data[line]
+
     if accuracy >= 0.4 or (accuracy == 0 and line == 2):
         data = new_transcript + ";" + image + ";" + "1" + ";" + str(line)
     else:
@@ -139,6 +140,7 @@ def changeStory():
 
     accuracy = 0
 
+    print(data)
     jsonified_data = jsonify(data)
     return jsonified_data
 
