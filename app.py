@@ -1,4 +1,6 @@
 import string
+import time
+
 import pyrebase
 
 from flask import Flask, render_template, request, jsonify
@@ -25,7 +27,6 @@ config = {
     "measurementId": "G-W4KBLDEWDL"
 }
 
-line = 1
 firebase = pyrebase.initialize_app(config)
 
 db = firebase.database()
@@ -38,6 +39,27 @@ usersT = db.child("kicommText").get()
 dictT = usersT.val()
 story_data = list(dictT.values())
 
+line = 1
+start = 0
+end = 0
+time_taken = 0
+
+performance_dict = {}
+
+final_dict = {"Accuracy":0, "Time_taken":0, "Speed":0}
+total_accuracy = 0
+avg_accuracy = 0
+total_time_taken = 0
+avg_time_per_line = 0
+total_speed = 0
+avg_words_per_sec = 0
+
+plot_flag = 0
+
+story_play = 1
+
+accuracy = 0
+
 def createWordlist(s):
     new_s = s.translate(str.maketrans('', '', string.punctuation))
     word_list = []
@@ -45,6 +67,18 @@ def createWordlist(s):
     for word in lower_s.split(" "):
         word_list.append(word)
     return word_list
+
+def createTranscript(s, common_words):
+    new_s = s.translate(str.maketrans('', '', string.punctuation))
+    new_s = new_s.lower()
+    word_list = []
+    for word in new_s.split(" "):
+        if word in common_words:
+            word_list.append(word.upper())
+        else:
+            word_list.append(word)
+    sentence = ' '.join(word_list)
+    return sentence
 
 def speechMatch(speechLine, storyLine):
     # Remove all punctuations, convert everything to lowercase
@@ -65,21 +99,47 @@ def hello_world():
 
 @app.route('/receiver', methods = ['POST'])
 def changeStory():
-    global line
+    global total_accuracy, avg_accuracy, total_time_taken, avg_time_per_line, avg_words_per_sec, total_speed
+    global plot_flag, accuracy
+    global line, start, end, time_taken
+
     speech_data = request.get_json()
     accuracy, common_words, wrong_words = speechMatch(speech_data, story_data[line])
     accuracy = round(accuracy, 2)
 
-    print("Speech :" + speech_data)
-    old_line = line
+    new_transcript = createTranscript(speech_data, common_words)
 
+    end = time.time()
+    time_taken = round(end - start, 2)
+    start = end
+
+    speed = round((time_taken / len(story_data[line].split())), 2)
+
+    # if speech is greater than threshold
     if accuracy >= 0.4:
-        line += 1
+        if line == 1:  # First line is getting wrong values for time, so omit it for time being by making them 0
+            accuracy = 0
+            speed = 0
+            time_taken = 0
 
-    print("Line no = " + str(old_line) + "-->" + str(line))
+        total_accuracy += accuracy
+        total_speed += speed
+        total_time_taken += time_taken
+
+        performance_dict[line] = [accuracy, time_taken, speed]
+
+        line += 1
+        print("Line no = " + str(line))
 
     image = img_data[line]
-    jsonified_data = jsonify(image)
+    if accuracy >= 0.4 or (accuracy == 0 and line == 2):
+        data = new_transcript + ";" + image + ";" + "1" + ";" + str(line)
+    else:
+        data = new_transcript + ";" + image + ";" + "0" + ";" + str(line)
+
+    accuracy = 0
+
+    jsonified_data = jsonify(data)
     return jsonified_data
 
 if __name__ == '__main__':
