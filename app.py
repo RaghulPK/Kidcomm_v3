@@ -49,19 +49,29 @@ time_taken = 0
 
 performance_dict = {}
 
-final_dict = {"Accuracy":0, "Time_taken":0, "Speed":0}
-total_accuracy = 0
-avg_accuracy = 0
-total_time_taken = 0
-avg_time_per_line = 0
-total_speed = 0
-avg_words_per_sec = 0
-
-plot_flag = 0
-
+# Keeps track whether the story is currently paused or in play
 story_play = 1
 
+# Values tracker block-----------------------------------------
+final_dict = {'Accuracy': 0, 'Time': 0, 'Speed': 0,
+              'Score': 0, 'Difficulty': [0, 0, 0], 'WrongWords': []}
 accuracy = 0
+total_accuracy = 0
+total_time_taken = 0
+total_speed = 0
+# Difficulty levels
+easy = 0
+medium = 0
+difficult = 0
+# Wrong words
+wrong_words_list = []
+# Score
+max_line_score = 0
+user_line_score= 0
+score = 0
+total_user_score = 0
+total_max_score = 0
+
 
 def createWordlist(s):
     new_s = s.translate(str.maketrans('', '', string.punctuation))
@@ -70,6 +80,7 @@ def createWordlist(s):
     for word in lower_s.split(" "):
         word_list.append(word)
     return word_list
+
 
 def createTranscript(s, common_words):
     new_s = s.translate(str.maketrans('', '', string.punctuation))
@@ -82,6 +93,7 @@ def createTranscript(s, common_words):
             word_list.append(word)
     sentence = ' '.join(word_list)
     return sentence
+
 
 def speechMatch(speechLine, storyLine):
     # Remove all punctuations, convert everything to lowercase
@@ -96,17 +108,6 @@ def speechMatch(speechLine, storyLine):
     percent_overlap = common_words_len / float(total_words)
     return percent_overlap, common_words, wrong_words
 
-@app.route('/')
-def home_page():
-    return render_template('home.html')
-
-@app.route('/story')
-def story_page():
-    return render_template('speech_recog.html')
-
-@app.route('/output')
-def output_page():
-    return render_template('output.html')
 
 def retrieveFirebaseData():
     user_dict = (db.child("Data").child("Kalam").get()).val()
@@ -210,15 +211,75 @@ def plot_attemptsPerDay(df):
     print(dic)
 
 
-@app.route('/story/receiver', methods = ['POST'])
+def endOfStory():
+    global total_accuracy, total_time_taken, total_speed
+    global easy, medium, difficult
+    global wrong_words_list, score
+
+    avg_accuracy = round((total_accuracy / (line - 1)), 2)
+    avg_time_per_line = round((total_time_taken / (line - 1)), 2)
+    avg_words_per_sec = round((total_speed / (line - 1)), 2)
+
+    today = date.today()
+    current_date = today.strftime("%d-%m-%Y")
+
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+
+    wrong_words_set = set(wrong_words_list)
+    wrong_words_ten = list(sorted(wrong_words_set, reverse=True))[:10]
+
+    score = total_user_score/total_max_score
+
+    # print("Story data : [Avg_Accuracy, Avg_Time_taken, Avg_Speed(words/min)]")
+    # print(avg_accuracy, avg_time_per_line, avg_words_per_sec)
+    data = {'Accuracy': avg_accuracy, 'Time': avg_time_per_line, 'Speed': avg_words_per_sec,
+            'Score': score, 'Difficulty': [easy, medium, difficult], 'WrongWords': wrong_words_ten}
+    print(data)
+
+    return data
+    # db.child('Data').child("Kalam").child(current_date).child(current_time).set(data)
+    #
+    # retrieveFirebaseData()
+    #
+    # df = pd.read_csv(r'D:\pythonProject\WebProject\SpeechRecognition4\Player.csv', index_col=0)
+    # plot_attemptsPerDay(df)
+
+
+
+
+@app.route('/')
+def home_page():
+    return render_template('home.html')
+
+
+@app.route('/story')
+def story_page():
+    global line
+    line = 1
+    return render_template('speech_recog.html')
+
+
+@app.route('/story/receiver', methods=['POST'])
 def changeStory():
     global total_accuracy, avg_accuracy, total_time_taken, avg_time_per_line, avg_words_per_sec, total_speed
     global plot_flag, accuracy
     global line, start, end, time_taken, story_play
+    global wrong_words_list, easy, medium, difficult
+    global max_line_score, user_line_score, total_user_score, total_max_score, score
 
     speech_data = request.get_json()
+
+
     accuracy, common_words, wrong_words = speechMatch(speech_data, story_data[line])
     accuracy = round(accuracy, 2)
+
+    max_line_score = len(story_data[line].split(" "))
+    user_line_score = accuracy * max_line_score
+    total_user_score += user_line_score
+    total_max_score += max_line_score
+
+    wrong_words_list += wrong_words
 
     new_transcript = createTranscript(speech_data, common_words)
 
@@ -229,45 +290,25 @@ def changeStory():
     speed = round((time_taken / len(story_data[line].split())), 2)
 
     # if speech is greater than threshold
-    if accuracy >= 0.4 and story_play==1:
+    if accuracy >= 0.4 and story_play == 1:
         if line == 1:  # First line is getting wrong values for time, so omit it for time being by making them 0
             accuracy = 0
             speed = 0
             time_taken = 0
+
+        if 0.4 <= accuracy < 0.7:
+            medium += 1
+        else:
+            easy += 1
 
         total_accuracy += accuracy
         total_speed += speed
         total_time_taken += time_taken
 
         performance_dict[line] = [accuracy, time_taken, speed]
-
-        # When we reached end of story
-        if line == 5 and plot_flag == 0:
-            avg_accuracy = round((total_accuracy / (line - 1)), 2)
-            avg_time_per_line = round((total_time_taken / (line - 1)), 2)
-            avg_words_per_sec = round((total_speed / (line - 1)), 2)
-
-            print("Linewise data : [Accuracy, Time_taken, Speed(words/min)]")
-            print(performance_dict)
-            print("Story data : [Avg_Accuracy, Avg_Time_taken, Avg_Speed(words/min)]")
-            print(avg_accuracy, avg_time_per_line, avg_words_per_sec)
-
-            today = date.today()
-            today = today.strftime("%d-%m-%Y")
-
-            now = datetime.now()
-            current_time = now.strftime("%H:%M:%S")
-
-            data = {'Accuracy': avg_accuracy, 'Time': avg_time_per_line, 'Speed': avg_words_per_sec}
-            db.child('Data').child("Kalam").child(today).child(current_time).set(data)
-
-            retrieveFirebaseData()
-
-            df = pd.read_csv(r'D:\pythonProject\WebProject\SpeechRecognition4\Player.csv', index_col=0)
-            plot_attemptsPerDay(df)
+        print("Line:"+str(line)+" ,"+str(performance_dict[line]))
 
         line += 1
-        print("Line no = " + str(line))
 
     image = img_data[line]
 
@@ -278,32 +319,40 @@ def changeStory():
 
     accuracy = 0
 
-    print(data)
     jsonified_data = jsonify(data)
     return jsonified_data
 
-@app.route('/story/button', methods = ['POST'])
+
+@app.route('/story/button', methods=['POST'])
 def buttonDetector():
     button_data = request.get_json()
     print(button_data)
-    global story_play, line
+    global story_play, line, difficult
     if button_data == "PREV":
-        if line!=0: line -= 1
+        if line != 0: line -= 1
         image = img_data[line]
         data = "_ _ _ _ _" + ";" + image + ";" + "1" + ";" + str(line)
     elif button_data == "NEXT":
         line += 1
         image = img_data[line]
         data = "_ _ _ _ _" + ";" + image + ";" + "1" + ";" + str(line)
-    elif button_data == "Pause":
+        difficult += 1
+    elif button_data == "PAUSE":
         image = img_data[line]
         data = "Story Paused" + ";" + image + ";" + "1" + ";" + str(line)
         story_play = 0
-    elif button_data == "Play":
+    elif button_data == "PLAY":
         image = img_data[line]
         data = "_ _ _ _ _" + ";" + image + ";" + "1" + ";" + str(line)
         story_play = 1
     return jsonify(data)
 
+
+@app.route('/output')
+def output_page():
+    performance_data = endOfStory()
+    return render_template('output.html', data=performance_data)
+
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
