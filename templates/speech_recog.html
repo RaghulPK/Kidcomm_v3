@@ -129,7 +129,7 @@
         {
             s = jsonResponse
             sep = s.indexOf(';')
-            const received = s.slice(0,sep)
+            const transcript = s.slice(0,sep)
 
             const rem1 = s.slice(sep+1)
             sep2 = rem1.indexOf(';')
@@ -144,7 +144,7 @@
             const line_no = parseInt(rem3)
 
             image.src = img_path
-            document.querySelector('#transcript').textContent = s
+            document.querySelector('#transcript').textContent = transcript
             if (colour_flag==="0")
             {
                 document.querySelector('#textBox').style.backgroundColor = '#F08080';
@@ -192,7 +192,6 @@
                 .map(result => result.transcript)
                 .join('')
 
-        if (
         say(transcript);
 
         });
