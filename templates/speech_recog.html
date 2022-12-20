@@ -144,7 +144,7 @@
             const line_no = parseInt(rem3)
 
             image.src = img_path
-            document.querySelector('#transcript').textContent = transcript
+            document.querySelector('#transcript').textContent = s
             if (colour_flag==="0")
             {
                 document.querySelector('#textBox').style.backgroundColor = '#F08080';
@@ -154,12 +154,13 @@
             {
                 document.querySelector('#textBox').style.backgroundColor = '#FFFF8F';
                 document.querySelector('#textBox').style.borderColor = 'green';
+                setTimeout(() => {  console.log("Wait"); }, 1000);
             }
         }
 
         function say(transcript)
         {
-            fetch("http://143.244.135.235:8029/receiver",
+            fetch("http://127.0.0.1:5000/story/receiver",
             {
                 method: 'POST',
                 headers: {
@@ -178,6 +179,29 @@
                 }
                 ).catch((err) => console.error(err));
         }
+
+        function button_press(command)
+        {
+            fetch("http://127.0.0.1:5000/story/button",
+            {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(command)}).then(res=>{
+                    if(res.ok){
+                        return res.json()
+                    }else{
+                        alert("something is wrong")
+                    }
+                }).then(jsonResponse=>{
+                    console.log(jsonResponse);
+                    updateHTML(jsonResponse);
+                }
+                ).catch((err) => console.error(err));
+        }
+
 
         var speech = true;
         window.SpeechRecognition = window.SpeechRecognition
@@ -200,6 +224,31 @@
             recognition.start();
             recognition.addEventListener('end', recognition.start);
         }
+
+        const prev_button = document.getElementById('button1');
+        const next_button = document.getElementById('button2');
+        const play_button = document.getElementById('button3');
+
+        prev_button.addEventListener('click', function prev_handleClick()
+        {
+            button_press("PREV")
+        });
+        next_button.addEventListener('click', function next_handleClick()
+        {
+            button_press("NEXT")
+        });
+        play_button.addEventListener('click', function play_handleClick() {
+            if (this.value=="PLAY")
+            {
+                button_press(this.value);
+                this.value = "PAUSE";
+            }
+            else
+            {
+                button_press(this.value);
+                this.value = "PLAY";
+            }
+        });
     </script>
 </body>
 
