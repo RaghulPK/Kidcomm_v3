@@ -156,11 +156,16 @@
                 document.querySelector('#textBox').style.borderColor = 'green';
                 setTimeout(() => {  console.log("Wait"); }, 1000);
             }
+
+            if (line_no==5)
+            {
+                window.open("./output", "_self");
+            }
         }
 
         function say(transcript)
         {
-            fetch("http://143.244.135.235:8029/story/receiver",
+            fetch("http://127.0.0.1:5000/story/receiver",
             {
                 method: 'POST',
                 headers: {
@@ -182,7 +187,7 @@
 
         function button_press(command)
         {
-            fetch("http://143.244.135.235:8029/story/button",
+            fetch("http://127.0.0.1:5000/story/button",
             {
                 method: 'POST',
                 headers: {
@@ -249,6 +254,7 @@
                 this.value = "PLAY";
             }
         });
+
     </script>
 </body>
 
