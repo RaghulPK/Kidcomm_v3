@@ -94,14 +94,18 @@ def speechMatch(speechLine, storyLine):
     return percent_overlap, common_words, wrong_words
 
 @app.route('/')
+def home_page():
+    return render_template('home.html')
+
+@app.route('/story')
 def hello_world():
     return render_template('speech_recog.html')
 
-@app.route('/receiver', methods = ['POST'])
+@app.route('/story/receiver', methods = ['POST'])
 def changeStory():
     global total_accuracy, avg_accuracy, total_time_taken, avg_time_per_line, avg_words_per_sec, total_speed
     global plot_flag, accuracy
-    global line, start, end, time_taken
+    global line, start, end, time_taken, story_play
 
     speech_data = request.get_json()
     accuracy, common_words, wrong_words = speechMatch(speech_data, story_data[line])
@@ -116,7 +120,7 @@ def changeStory():
     speed = round((time_taken / len(story_data[line].split())), 2)
 
     # if speech is greater than threshold
-    if accuracy >= 0.4:
+    if accuracy >= 0.4 and story_play==1:
         if line == 1:  # First line is getting wrong values for time, so omit it for time being by making them 0
             accuracy = 0
             speed = 0
@@ -143,6 +147,29 @@ def changeStory():
     print(data)
     jsonified_data = jsonify(data)
     return jsonified_data
+
+@app.route('/story/button', methods = ['POST'])
+def buttonDetector():
+    button_data = request.get_json()
+    print(button_data)
+    global story_play, line
+    if button_data == "PREV":
+        if line!=0: line -= 1
+        image = img_data[line]
+        data = "_ _ _ _ _" + ";" + image + ";" + "1" + ";" + str(line)
+    elif button_data == "NEXT":
+        line += 1
+        image = img_data[line]
+        data = "_ _ _ _ _" + ";" + image + ";" + "1" + ";" + str(line)
+    elif button_data == "Pause":
+        image = img_data[line]
+        data = "Story Paused" + ";" + image + ";" + "1" + ";" + str(line)
+        story_play = 0
+    elif button_data == "Play":
+        image = img_data[line]
+        data = "_ _ _ _ _" + ";" + image + ";" + "1" + ";" + str(line)
+        story_play = 1
+    return jsonify(data)
 
 if __name__ == '__main__':
     app.run(debug=True)
