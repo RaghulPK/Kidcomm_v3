@@ -46,7 +46,7 @@
 
             .speechBox {
               position: relative;
-              top: 80px;
+              top: 60px;
               left: 0px;
               width: 800px;
               padding: 0px;
@@ -69,37 +69,37 @@
 
             .button3 {
               position: relative;
-              top: 20px;
+              top: 30px;
               left: 0px;
             }
 
             .button3:hover {
               position: relative;
-              top: 10px;
+              top: 20px;
               left: 0px;
             }
 
             .button1 {
               position: relative;
-              top: -20px;
+              top: -30px;
               left: 180px;
             }
 
             .button1:hover {
               position: relative;
-              top: -20px;
+              top: -30px;
               left: 170px;
             }
 
             .button2 {
               position: relative;
-              top: -20px;
+              top: -30px;
               left: -200px;
             }
 
             .button2:hover {
               position: relative;
-              top: -20px;
+              top: -30px;
               left: -190px;
             }
 
@@ -112,9 +112,8 @@
                  <center>
                      <img class="image1" src="https://drive.google.com/uc?export=view&id=1wbSw1QCwSliXhMvI7FzRJ9uq4wJcyxhg" id="storyImage" width="600" height="370" >
                      <img class="image2" src="https://drive.google.com/uc?export=view&id=1w514PlwqUuSmprR04T4Dui0SusMl9-R3" id="TVframe" width="1300" height="800" >
-                     <p id="status">Connection status will go here</p>
                     <center>
-                        <input class="button button3" type="image" src="https://drive.google.com/uc?export=view&id=1lNulbIqAc26rMQbaJodFxjHgSE7iHFCn" alt="Prev_button" value="PAUSE" name="btnPause" id="button3"/>
+                        <input class="button button3" type="image" src="https://drive.google.com/uc?export=view&id=1j6s807FIQFk9dTCsqzw2nVt3-zfVlr1j" alt="Pause_button" value="PAUSE" name="btnPause" id="button3"/>
                         <div class="speechBox" id="textBox"><p id="transcript"></p></div>
                     </center>
                  </center>
@@ -144,7 +143,7 @@
             const line_no = parseInt(rem3)
 
             image.src = img_path
-            document.querySelector('#transcript').textContent = s
+            document.querySelector('#transcript').textContent = transcript
             if (colour_flag==="0")
             {
                 document.querySelector('#textBox').style.backgroundColor = '#F08080';
@@ -165,7 +164,7 @@
 
         function say(transcript)
         {
-            fetch("https://143.244.135.235:8029/story/receiver",
+            fetch("http://143.244.135.235:8029/story/receiver",
             {
                 method: 'POST',
                 headers: {
@@ -187,7 +186,7 @@
 
         function button_press(command)
         {
-            fetch("https://143.244.135.235:8029/story/button",
+            fetch("http://143.244.135.235:8029/story/button",
             {
                 method: 'POST',
                 headers: {
@@ -213,7 +212,7 @@
                         || window.webkitSpeechRecognition;
 
         const recognition = new SpeechRecognition();
-        recognition.interimResults = true;
+<!--        recognition.interimResults = true;-->
 
         recognition.addEventListener('result', e => {
             const transcript = Array.from(e.results)
@@ -246,11 +245,13 @@
             if (this.value=="PLAY")
             {
                 button_press(this.value);
+                play_button.src = "https://drive.google.com/uc?export=view&id=1j6s807FIQFk9dTCsqzw2nVt3-zfVlr1j";
                 this.value = "PAUSE";
             }
             else
             {
                 button_press(this.value);
+                play_button.src = "https://drive.google.com/uc?export=view&id=1gdMr7U3KjEBw_N6iTFHtyo5VYL9oPVOH";
                 this.value = "PLAY";
             }
         });
