@@ -7,19 +7,159 @@
         "width=device-width, initial-scale=1.0">
 
     <title>Speech to Text</title>
+    <style>
+            .image_parent {
+                position: relative;
+                top: 0;
+                left: 0;
+              }
+            .image1 {
+                position: relative;
+                top: 30px;
+                left: 0px;
+                overflow-x:hidden;
+                overflow-y:hidden;
+              }
+            .image2 {
+                position: absolute;
+                top: -170px;
+                left: -250px;
+                overflow-x:hidden;
+                overflow-y:hidden;
+              }
+
+            .left {
+              position: absolute;
+              left: 30px;
+              padding: 10px;
+            }
+
+            .centre {
+              margin: auto;
+            }
+
+            .right {
+              position: absolute;
+              right: 30px;
+              padding: 10px;
+            }
+
+            .speechBox {
+              position: relative;
+              top: 80px;
+              left: 0px;
+              width: 800px;
+              padding: 0px;
+              background-color: #FFFF94;
+              color: black;
+              font-family: "Monaco", sans-serif;
+              font-weight: 700;
+              border: 2px solid green;
+              margin: 0;
+              border-radius: 8px;
+            }
+
+           .button {
+              width: 100px;
+              height: 100px;
+              margin: 4px 2px;
+              transition-duration: 0.4s;
+              cursor: pointer;
+            }
+
+            .button3 {
+              position: relative;
+              top: 20px;
+              left: 0px;
+            }
+
+            .button3:hover {
+              position: relative;
+              top: 10px;
+              left: 0px;
+            }
+
+            .button1 {
+              position: relative;
+              top: -20px;
+              left: 180px;
+            }
+
+            .button1:hover {
+              position: relative;
+              top: -20px;
+              left: 170px;
+            }
+
+            .button2 {
+              position: relative;
+              top: -20px;
+              left: -200px;
+            }
+
+            .button2:hover {
+              position: relative;
+              top: -20px;
+              left: -190px;
+            }
+
+       </style>
 </head>
 
-<body>
-    <div class="words" contenteditable>
-        <p id="p"></p>
-    </div>
-
-    <img class="image1" src="https://drive.google.com/uc?export=view&id=1wbSw1QCwSliXhMvI7FzRJ9uq4wJcyxhg" id="storyImage" width="600" height="370" >
+<body style="background-color: black";>
+    <div style="display:flex; flex-direction: row; justify-content: center; align-items: center">
+            <div class="image_parent">
+                 <center>
+                     <img class="image1" src="https://drive.google.com/uc?export=view&id=1wbSw1QCwSliXhMvI7FzRJ9uq4wJcyxhg" id="storyImage" width="600" height="370" >
+                     <img class="image2" src="https://drive.google.com/uc?export=view&id=1w514PlwqUuSmprR04T4Dui0SusMl9-R3" id="TVframe" width="1300" height="800" >
+                     <p id="status">Connection status will go here</p>
+                    <center>
+                        <input class="button button3" type="image" src="https://drive.google.com/uc?export=view&id=1lNulbIqAc26rMQbaJodFxjHgSE7iHFCn" alt="Prev_button" value="PAUSE" name="btnPause" id="button3"/>
+                        <div class="speechBox" id="textBox"><p id="transcript"></p></div>
+                    </center>
+                 </center>
+            </div>
+<!--            <div class="left"><input class="button button1" value="PREV" name="btnPrev" id="button1"/></div>-->
+            <div class="left"><input class="button button1" type="image" src="https://drive.google.com/uc?export=view&id=1lNulbIqAc26rMQbaJodFxjHgSE7iHFCn" alt="Prev_button" value="PREV" id="button1"/></div>
+            <div class="right"><input class="button button2" type="image" src="https://drive.google.com/uc?export=view&id=1BvM5PO1qN8k5C2WaL2SL0ltoEDmaQFOW" alt="Next_button" value="NEXT" name="btnNext" id="button2"/></div>
+        </div>
 
     <script>
+        function updateHTML(jsonResponse)
+        {
+            s = jsonResponse
+            sep = s.indexOf(';')
+            const received = s.slice(0,sep)
+
+            const rem1 = s.slice(sep+1)
+            sep2 = rem1.indexOf(';')
+            const img_path = rem1.slice(0,sep2)
+            var image = document.getElementById('storyImage');
+
+            const rem2 = rem1.slice(sep2+1)
+            sep3 = rem2.indexOf(';')
+            const colour_flag = rem2.slice(0,sep3)
+
+            const rem3 = rem2.slice(sep3+1)
+            const line_no = parseInt(rem3)
+
+            image.src = img_path
+            document.querySelector('#transcript').textContent = s
+            if (colour_flag==="0")
+            {
+                document.querySelector('#textBox').style.backgroundColor = '#F08080';
+                document.querySelector('#textBox').style.borderColor = 'red';
+            }
+            else if (colour_flag==="1")
+            {
+                document.querySelector('#textBox').style.backgroundColor = '#FFFF8F';
+                document.querySelector('#textBox').style.borderColor = 'green';
+            }
+        }
+
         function say(transcript)
         {
-            fetch("http://143.244.135.235:8029/receiver",
+            fetch("http://127.0.0.1:5000/receiver",
             {
                 method: 'POST',
                 headers: {
@@ -34,8 +174,7 @@
                     }
                 }).then(jsonResponse=>{
                     console.log(jsonResponse);
-                    var image = document.getElementById('storyImage');
-                    image.src = jsonResponse;
+                    updateHTML(jsonResponse);
                 }
                 ).catch((err) => console.error(err));
         }
@@ -46,8 +185,6 @@
 
         const recognition = new SpeechRecognition();
         recognition.interimResults = true;
-        const words = document.querySelector('.words');
-        words.appendChild(p);
 
         recognition.addEventListener('result', e => {
             const transcript = Array.from(e.results)
@@ -55,9 +192,9 @@
                 .map(result => result.transcript)
                 .join('')
 
+        if (
         say(transcript);
 
-            document.getElementById("p").innerHTML = transcript;
         });
 
         if (speech == true) {
