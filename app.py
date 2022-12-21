@@ -5,7 +5,7 @@ import csv
 
 import pyrebase
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_cors import CORS
 
 # Plotting using libraries
@@ -53,7 +53,7 @@ performance_dict = {}
 story_play = 1
 
 # Values tracker block-----------------------------------------
-final_dict = {'Accuracy': 0, 'Time': 0, 'Speed': 0,
+user_data = {'Accuracy': 0, 'Time': 0, 'Speed': 0,
               'Score': 0, 'Difficulty': [0, 0, 0], 'WrongWords': []}
 accuracy = 0
 total_accuracy = 0
@@ -212,9 +212,10 @@ def plot_attemptsPerDay(df):
 
 
 def endOfStory():
-    global total_accuracy, total_time_taken, total_speed
+    global total_accuracy, total_time_taken, total_speed, avg_accuracy, avg_time_per_line, avg_words_per_sec
     global easy, medium, difficult
     global wrong_words_list, score
+    global user_data
 
     avg_accuracy = round((total_accuracy / (line - 1)), 2)
     avg_time_per_line = round((total_time_taken / (line - 1)), 2)
@@ -228,16 +229,20 @@ def endOfStory():
 
     wrong_words_set = set(wrong_words_list)
     wrong_words_ten = list(sorted(wrong_words_set, reverse=True))[:10]
+    wrong_words = ""
+    for word in wrong_words_ten:
+        wrong_words += word + ","
 
-    score = total_user_score/total_max_score
+    score = total_user_score / total_max_score * 100
 
     # print("Story data : [Avg_Accuracy, Avg_Time_taken, Avg_Speed(words/min)]")
     # print(avg_accuracy, avg_time_per_line, avg_words_per_sec)
-    data = {'Accuracy': avg_accuracy, 'Time': avg_time_per_line, 'Speed': avg_words_per_sec,
-            'Score': score, 'Difficulty': [easy, medium, difficult], 'WrongWords': wrong_words_ten}
-    print(data)
+    user_data = {'Accuracy': int(avg_accuracy * 100), 'Time': round(avg_time_per_line, 2),
+                 'Speed': round(avg_words_per_sec, 2),
+                 'Score': int(score), 'Difficulty': [easy, medium, difficult], 'WrongWords': wrong_words}
+    print(user_data)
 
-    return data
+    return user_data
     # db.child('Data').child("Kalam").child(current_date).child(current_time).set(data)
     #
     # retrieveFirebaseData()
@@ -348,10 +353,20 @@ def buttonDetector():
     return jsonify(data)
 
 
-@app.route('/output')
+@app.route('/charts')
+def charts():
+    # Upload data to firebase
+    return "<h1>Hello</h1>"
+
+
+@app.route('/output', methods=['GET', 'POST'])
 def output_page():
+    if request.method == "POST":
+        print("Button pressed")
+        return redirect(url_for('charts'))
+
     performance_data = endOfStory()
-    return render_template('output.html', data=performance_data)
+    return render_template('output1.html', data=performance_data)
 
 
 if __name__ == '__main__':

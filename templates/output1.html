@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Circular Progress Bar</title>
+        <!-- Gooogle Font -->
+        <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap"
+        rel="stylesheet"
+        />
+        <!-- Stylesheet -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style_output.css') }}" />
+
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+        <link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+    </head>
+    <body>
+        <div class="flexbox2">
+            <div class="flexbox">
+                <!-- <div class="wrapper"> -->
+                <div class="shape-1"></div>
+                <div class="shape-2"></div>
+                <div class="container2">
+                    <h2> PERFORMANCE</h2>
+                    <div class="skills">
+                        <div class="details">
+                            <span>AVERAGE ACCURACY</span>
+                            <span id="acc-span">90%</span>
+                        </div>
+                        <div class="bar">
+                            <div id="avgacc-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="skills">
+                        <div class="details">
+                            <span>AVERAGE SPEED</span>
+                            <span id = "spd-span">75%</span>
+                        </div>
+                        <div class="bar">
+                            <div id="avgspd-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="skills">
+                        <div class="details">
+                            <span>AVERAGE TIME PER LINE</span>
+                            <span id = "time-span">80%</span>
+                        </div>
+                        <div class="bar">
+                            <div id="time-bar"></div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- </div>  -->
+
+                <div class="container3">
+                    <h2>SCORE</h2>
+                    <div class="circular-progress">
+                    <div class="value-container">0%</div>
+                    </div>
+                </div>
+
+
+            </div>
+            <h2 id = "improve">NEED IMPROVEMENT IN</h2>
+            <ul id="first-ul"></ul>
+            <form action="{{ url_for('output_page')}}" method="post">
+            <button class="button-18" role="button" id="analysis_button" type="submit">Analysis</button>
+            <script>
+                var user = JSON.parse('{{ data | tojson | safe}}');
+
+                let avgAccuracy = user.Accuracy;
+                let avgTime = user.Time;
+                let avgSpeed = user.Speed;
+                let score = user.Score;
+                let wrongStr = user.WrongWords;
+
+                alert(user)
+
+                const wrongList = [];
+                for (let i = 1; i <= 10; i++)
+                {
+                    sep = wrongStr.indexOf(',')
+                    wrong_word = wrongStr.slice(0,sep)
+                    wrongStr = wrongStr.slice(sep+1)
+                    wrongList.push(wrong_word);
+                }
+
+                let progressBar = document.querySelector(".circular-progress");
+                let valueContainer = document.querySelector(".value-container");
+
+                let progressValue = 0;
+                let progressEndValue = score;         //  Update it for SCORE loader
+                let speed = 50;
+
+                let progress = setInterval(() => {
+                  progressValue++;
+                  valueContainer.textContent = `${progressValue}%`;
+                  progressBar.style.background = `conic-gradient(
+                      #4d5bf9 ${progressValue * 3.6}deg,
+                      #cadcff ${progressValue * 3.6}deg
+                  )`;
+                  if (progressValue == progressEndValue) {
+                    clearInterval(progress);
+                  }
+                }, speed);
+
+                // FOR WRONG WORDS
+
+                 var arr = wrongList;       //   Update it for WRONG WORDS
+
+                 var ul = document.getElementById("first-ul")
+                console.log(ul)
+                arr.forEach(function(e){
+                     var li = document.createElement('li');
+                     li.innerText = e;
+                     ul.append(li)
+                  })
+
+                  // FOR SPAN IN PERFORMANCE BAR
+
+                  var mxtime = 10;
+                  var crrtime = avgTime;         // Update it for Average time per Line
+                  var timespan = document.getElementById("time-span")
+                  var timebar = document.getElementById("time-bar")
+                  timespan.innerText = crrtime;
+                  root = document.documentElement;
+                  root.style.setProperty('--change3', crrtime*10 + "%");
+
+                  var mxspeed = 5;
+                  var crrspeed = avgSpeed;       // Update it for average speed
+                  var spdspan = document.getElementById("spd-span")
+                  var spdbar = document.getElementById("avgspd-bar")
+                  spdspan.innerText = crrspeed;
+                  //root2 = document.documentElement;
+                  root.style.setProperty('--change2', (crrspeed/mxspeed)*100 + "%");
+
+                  var crracc = avgAccuracy;        // Update it for accuracy
+                  var accspan = document.getElementById("acc-span")
+                  var accbar = document.getElementById("avgacc-bar")
+                  accspan.innerText = crracc;
+                  //root1 = document.documentElement;
+                  root.style.setProperty('--change1', crracc + "%");
+            </script>
+
+        </div>
+    </body>
+</html>
