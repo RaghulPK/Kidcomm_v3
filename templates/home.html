@@ -58,7 +58,7 @@
               Login with Username <span>▼</span>
             </a>
             <div id="login-content">
-              <form action = "http://143.244.135.235:8036/" method="post">
+              <form action = "{{ url_for('story') }}" method="post">
                 <fieldset id="inputs">
                   <input  id="sername" type="text" name="Username" placeholder="Username" required>
                 </fieldset>
