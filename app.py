@@ -1,6 +1,5 @@
 import string
 import time
-from datetime import datetime, date
 import csv
 
 import pyrebase
@@ -10,16 +9,11 @@ from flask_cors import CORS
 from connectDB import workingWithBackend
 
 # Plotting using libraries
-from bokeh.plotting import figure, output_file, show
-import pandas as pd
-import numpy as np
-from bokeh.layouts import layout
-from bokeh.io import curdoc
-from bokeh.models import HoverTool
 from bokeh.embed import components
 from bokeh.resources import CDN
 
-import connectDB
+import requests
+from zipfile import ZipFile
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -46,6 +40,29 @@ img_data = list(dictI.values())
 usersT = db.child("kicommText").get()
 dictT = usersT.val()
 story_data = list(dictT.values())
+
+drive_imgPaths = \
+    ["https://drive.google.com/file/d/1NAR015rAWp498T_bCEuSYBQb5FAIoWy8/view?usp=sharing",
+     "https://drive.google.com/file/d/1xgaOzROCiGf1qumDSwxkV24IOS7oa3jb/view?usp=sharing",
+     "https://drive.google.com/file/d/1zof_WoC6DPgp-MbvI_YWCDiUG2LB7DUH/view?usp=sharing",
+     "https://drive.google.com/file/d/1_mEoh9VYZQhTKvBja667aWKTD-rSZrYi/view?usp=sharing",
+     "https://drive.google.com/file/d/1FyhW-1pxMwoVzYRssvkzeTX_yV0PHyF7/view?usp=sharing",
+     "https://drive.google.com/file/d/1wmyYT3kHqr3cj-z-SKZQIVdXeadIgEs_/view?usp=sharing",
+     "https://drive.google.com/file/d/1BQ69tSDN3s7EAH18iu2UBSsJCJjDmdUU/view?usp=sharing",
+     "https://drive.google.com/file/d/1asm_CZOftj96ZHiuRBrb_LTPuTTWIxc7/view?usp=sharing",
+     "https://drive.google.com/file/d/1wHpaZ90ZBGMWgBrzBg1CH2Yn--c_T3Xm/view?usp=sharing",
+     "https://drive.google.com/file/d/15sG2ngJES6qK0eS6i3Kd-OiABscKxAzQ/view?usp=sharing",
+     "https://drive.google.com/file/d/1cNonl2PDqJN0G2XXig2g1-DdkSvfnqRV/view?usp=sharing",
+     "https://drive.google.com/file/d/1ssMcNds6VMq9UqGKuug-VOYgxpcKD4zv/view?usp=sharing",
+     "https://drive.google.com/file/d/1nnO2M1Hf5qnwlSXrM4JyhEFAwMoMbVMP/view?usp=sharing",
+     "https://drive.google.com/file/d/1PdXB4-40azir82o2WsyHcCzvzD_nzmAJ/view?usp=sharing",
+     "https://drive.google.com/file/d/160rk1PwOhWaULUKAyvUbjyLAaDUs6VKL/view?usp=sharing",
+     "https://drive.google.com/file/d/1dw_bpEvmUPOBNQv3L5aHK2ktuCJtRdPv/view?usp=sharing",
+     "https://drive.google.com/file/d/1hueRpPSpphfdenzyKjxdx9Jar5i4uDBG/view?usp=sharing",
+     "https://drive.google.com/file/d/1ZAWZZowOVWDP4wfO91VQbXgjeH234LSS/view?usp=sharing",
+     "https://drive.google.com/file/d/1G_AvQyDZi0bAJRw2IDQ8tQV4EMm5BVJi/view?usp=sharing",
+     "https://drive.google.com/file/d/1Yg38M0gHqpTKJDgC_fyB5-huChwZtAvf/view?usp=sharing"]
+
 
 line = 1
 start = 0
@@ -114,6 +131,23 @@ def speechMatch(speechLine, storyLine):
     return percent_overlap, common_words, wrong_words
 
 
+def extract_zipFile():
+    print('Downloading started')
+    url = "https://drive.google.com/uc?export=view&id=18D-7JyarJ__DBKKXwrOf_eE60o3vL9Dm"
+
+    # Downloading the file by sending the request to the URL
+    req = requests.get(url)
+
+    # Writing the file to the local file system
+    with open("Woodcutter.zip", 'wb') as output_file:
+        output_file.write(req.content)
+    print('Downloading Completed')
+
+    # Extracting images from zip file
+    with ZipFile("Woodcutter.zip", 'r') as zObject:
+        zObject.extractall(path="static/images")
+
+
 def retrieveFirebaseData():
     user_dict = (db.child("Data").child("Kalam").get()).val()
 
@@ -137,6 +171,7 @@ def retrieveFirebaseData():
         for row in user_data:
             writer.writerow({'Date': row[0], 'Time': row[1], 'Accuracy': row[2], 'Speed': row[3], 'Time taken': row[4]})
 
+
 def endOfStory():
     global total_accuracy, total_time_taken, total_speed, avg_accuracy, avg_time_per_line, avg_words_per_sec
     global easy, medium, difficult
@@ -155,20 +190,12 @@ def endOfStory():
 
     score = total_user_score / total_max_score * 100
 
-    # print("Story data : [Avg_Accuracy, Avg_Time_taken, Avg_Speed(words/min)]")
-    # print(avg_accuracy, avg_time_per_line, avg_words_per_sec)
     user_data = {'Accuracy': int(avg_accuracy * 100), 'Time': round(avg_time_per_line, 2),
                  'Speed': round(avg_words_per_sec, 2),
                  'Score': int(score), 'Difficulty': [easy, medium, difficult], 'WrongWords': wrong_words}
     print(user_data)
 
     return user_data
-    # db.child('Data').child("Kalam").child(current_date).child(current_time).set(data)
-    #
-    # retrieveFirebaseData()
-    #
-    # df = pd.read_csv(r'D:\pythonProject\WebProject\SpeechRecognition4\Player.csv', index_col=0)
-    # plot_attemptsPerDay(df)
 
 
 @app.route('/')
@@ -180,6 +207,7 @@ def home_page():
 def story_page():
     global line
     line = 1
+    extract_zipFile()
     return render_template('speech_recog.html')
 
 
@@ -273,11 +301,6 @@ def buttonDetector():
         data = "_ _ _ _ _" + ";" + image + ";" + "1" + ";" + str(line)
         story_play = 1
     return jsonify(data)
-
-
-def charts():
-    connectDB.workingWithBackend(user_data, [easy, medium, difficult])
-
 
 @app.route('/output')
 def output_page():

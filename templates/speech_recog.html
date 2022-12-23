@@ -139,10 +139,10 @@
             sep3 = rem2.indexOf(';')
             const colour_flag = rem2.slice(0,sep3)
 
-            const rem3 = rem2.slice(sep3+1)
-            const line_no = parseInt(rem3)
+            const line_no_str = rem2.slice(sep3+1)
+            const line_no = parseInt(line_no_str)
 
-            image.src = img_path
+            document.getElementById("storyImage").src = "static/images/" + line_no_str +"1-min.png";
             document.querySelector('#transcript').textContent = transcript
             if (colour_flag==="0")
             {
@@ -164,7 +164,7 @@
 
         function say(transcript)
         {
-            fetch("http://143.244.135.235:8036/story/receiver",
+            fetch("http://127.0.0.1:5000/story/receiver",
             {
                 method: 'POST',
                 headers: {
@@ -186,7 +186,7 @@
 
         function button_press(command)
         {
-            fetch("http://143.244.135.235:8036/story/button",
+            fetch("http://127.0.0.1:5000/story/button",
             {
                 method: 'POST',
                 headers: {
