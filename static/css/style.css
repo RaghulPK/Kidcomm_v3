@@ -33,6 +33,60 @@ h6 {
 }
 
 /*--------------------------------------------------------------
+# Login
+--------------------------------------------------------------*/
+
+nav #login-content {
+  display: none;
+  position: absolute;
+  top: 50px;
+  background: transparent;
+  padding: 15px;
+  box-shadow: 0 2px 2px -1px rgba(0,0,0,.9);
+  border-radius: 3px 0 3px 10px;
+}
+
+#inputs input {
+  background: #f1f1f1;
+  padding: 6px 5px;
+  width: 238px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  box-shadow: 0 1px 1px #ccc inset;
+}
+
+#inputs input:focus {
+  background-color: #fff;
+  border-color: #e8c291;
+  outline: none;
+  box-shadow: 0 0 0 1px #e8c291 inset;
+}
+
+#login #actions {
+  margin: 10px 0 0 0;
+}
+
+#login #submit {
+  background-color: #8577fb;
+  border-radius: 3px;
+  float: left;
+  height: 30px;
+  padding: 0;
+  width: 100px;
+  cursor: pointer;
+  font: bold 14px Arial, Helvetica;
+  color: #fff;
+  border: #5846f9;
+
+}
+
+#login #submit:hover,
+#login #submit:focus {
+  background-color: #5846f9;
+}
+
+
+/*--------------------------------------------------------------
 # Back to top button
 --------------------------------------------------------------*/
 .back-to-top {

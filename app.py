@@ -94,6 +94,9 @@ score = 0
 total_user_score = 0
 total_max_score = 0
 
+# User name is "guest" by default
+user_name = "Kalam"
+
 
 def createWordlist(s):
     new_s = s.translate(str.maketrans('', '', string.punctuation))
@@ -198,13 +201,18 @@ def endOfStory():
     return user_data
 
 
-@app.route('/')
+@app.route('/', methods = ['POST', 'GET'])
 def home_page():
+    global user_name
+    if request.method == 'POST':
+        user_name = request.form.get('Username')
+        print(user_name)
+        return redirect(url_for('story'))
     return render_template('home.html')
 
 
 @app.route('/story')
-def story_page():
+def story():
     global line
     line = 1
     extract_zipFile()
@@ -309,7 +317,7 @@ def output_page():
 
 @app.route('/plots')
 def home_page2():
-    g1 = workingWithBackend(user_data, [easy, medium, difficult])
+    g1 = workingWithBackend(user_data, [easy, medium, difficult], user_name)
     demo_script_code1 , chart_code1 = components(g1)
     cdn_js=CDN.js_files[0]
     return render_template('datetime_3.html',demo_script_code1=demo_script_code1,chart_code1=chart_code1,cdn_js=cdn_js)

@@ -93,6 +93,11 @@
                 let valueContainer = document.querySelector(".value-container");
 
                 let progressValue = 0;
+                if (score==0)
+                {
+                    score = 1;
+                    alert("Try better next time");
+                }
                 let progressEndValue = score;         //  Update it for SCORE loader
                 let speed = 50;
 

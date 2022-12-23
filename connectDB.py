@@ -10,6 +10,9 @@ from bokeh.models import HoverTool
 from bokeh.plotting import figure
 from bokeh.transform import cumsum
 
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+
 config = {
     "apiKey": "AIzaSyD7IYK6nNprDHxFEWWsGEfR_u13ECdlJ34",
     "authDomain": "tempbackend-7c9b3.firebaseapp.com",
@@ -28,14 +31,6 @@ db = firebase.database()
 diff_list = []
 
 def plot_attemptsPerDay(user_df):
-    dat = {
-        "date": ['17-11-2022', '18-11-2022'],
-        "Time": [50, 40],
-        "Accuracy": [50, 40],
-        "Speed": [2, 4],
-        "Time": [50, 40]
-    }
-
     # load data into a DataFrame object:
     # df = pd.DataFrame(dat)
     df = user_df
@@ -56,7 +51,16 @@ def plot_attemptsPerDay(user_df):
         else:
             dic[dates[i]] = 1
 
-    print(min_date, max_date, '$')
+    print(type(min_date), max_date, '$')
+
+    min_date_object = datetime.strptime(min_date, '%d-%m-%Y')
+    past_date = min_date_object - relativedelta(months=2)
+    min_date = past_date.strftime('%d-%m-%Y')
+
+    max_date_object = datetime.strptime(max_date, '%d-%m-%Y')
+    future_date = max_date_object + relativedelta(months=2)
+    max_date = future_date.strftime('%d-%m-%Y')
+
     date_generated = pd.date_range(min_date, max_date)
     date_generated_2 = date_generated.strftime("%d-%m-%Y")
     print(date_generated)
@@ -135,8 +139,8 @@ def plot_attemptsPerDay(user_df):
     return layout([[pl, pl_2], [pl_3, p]])
     # print(dic)
 
-def retrieveFirebaseData():
-    user_dict = (db.child("Data").child("Kalam").get()).val()
+def retrieveFirebaseData(user_name):
+    user_dict = (db.child("Data").child(user_name).get()).val()
     date_keys = list(user_dict.keys())
 
     user_data = []
@@ -153,7 +157,7 @@ def retrieveFirebaseData():
     return user_data_df
 
 
-def putOnFirebaseData(data):
+def putOnFirebaseData(data, user_name):
     today = date.today()
     current_date = today.strftime("%d-%m-%Y")
 
@@ -165,12 +169,12 @@ def putOnFirebaseData(data):
     avg_words_per_sec = data['Speed']
 
     data = {'Accuracy': avg_accuracy, 'Time': avg_time_per_line, 'Speed': avg_words_per_sec}
-    db.child('Data').child("Kalam").child(current_date).child(current_time).set(data)
+    db.child('Data').child(user_name).child(current_date).child(current_time).set(data)
 
 
-def workingWithBackend(data, difficulty_list):
+def workingWithBackend(data, difficulty_list, user_name):
     global diff_list
     diff_list = difficulty_list
-    putOnFirebaseData(data)
-    user_data_df = retrieveFirebaseData()
+    putOnFirebaseData(data, user_name)
+    user_data_df = retrieveFirebaseData(user_name)
     return plot_attemptsPerDay(user_data_df)

@@ -26,6 +26,7 @@
 
   <!-- Template Main CSS File -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
   <!-- =======================================================
   * Template Name: Techie - v4.9.1
@@ -50,7 +51,26 @@
           <li><a class="nav-link scrollto" href="#about">Instructions</a></li>
           <li><a class="nav-link scrollto" href="#features">About and Features</a></li>
           <li><a class="nav-link scrollto " href="#testimonials">Our Mentors</a></li>
-          <li><a class="getstarted scrollto" href="story">Get Started</a></li>
+<!--          <li><a class="getstarted scrollto" href="story">Get Started</a></li>-->
+
+          <li id="login">
+            <a id="login-trigger" href="#">
+              Login with Username <span>▼</span>
+            </a>
+            <div id="login-content">
+              <form action = "http://localhost:5000/" method="post">
+                <fieldset id="inputs">
+                  <input  id="sername" type="text" name="Username" placeholder="Username" required>
+                </fieldset>
+
+                <fieldset id="actions">
+                  <input type="submit" id="submit" value="Log in">
+                </fieldset>
+
+              </form>
+            </div>
+          </li>
+
         </ul>
         <i class="bi bi-list mobile-nav-toggle"></i>
       </nav><!-- .navbar -->
@@ -244,6 +264,19 @@
 
   <!-- Template Main JS File -->
   <script src="static/js/main.js"></script>
+  <script>
+
+    $(document).ready(function(){
+        $('#login-trigger').click(function(){
+          $(this).next('#login-content').slideToggle();
+          $(this).toggleClass('active');
+
+          if ($(this).hasClass('active')) $(this).find('span').html('&#x25B2;')
+            else $(this).find('span').html('&#x25BC;')
+          })
+    });
+
+  </script>
 
 </body>
 
